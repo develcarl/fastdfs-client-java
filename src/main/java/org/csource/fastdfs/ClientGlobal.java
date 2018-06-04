@@ -285,7 +285,7 @@ public class ClientGlobal {
   public static String configInfo() {
     String trackerServers = "";
     if (g_tracker_group != null) {
-      InetSocketAddress[] trackerAddresses = g_tracker_group.tracker_servers;
+      InetSocketAddress[] trackerAddresses = g_tracker_group.getTrackerServers();
       for (InetSocketAddress inetSocketAddress : trackerAddresses) {
         if(trackerServers.length() > 0) trackerServers += ",";
         trackerServers += inetSocketAddress.toString().substring(1);

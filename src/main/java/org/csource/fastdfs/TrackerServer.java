@@ -8,6 +8,8 @@
 
 package org.csource.fastdfs;
 
+import org.csource.autoconfig.FastDFSProperties;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -23,6 +25,7 @@ import java.net.Socket;
 public class TrackerServer {
   protected Socket sock;
   protected InetSocketAddress inetSockAddr;
+  protected FastDFSProperties properties;
 
   /**
    * Constructor
@@ -30,9 +33,10 @@ public class TrackerServer {
    * @param sock         Socket of server
    * @param inetSockAddr the server info
    */
-  public TrackerServer(Socket sock, InetSocketAddress inetSockAddr) {
+  public TrackerServer(Socket sock, InetSocketAddress inetSockAddr, FastDFSProperties properties) {
     this.sock = sock;
     this.inetSockAddr = inetSockAddr;
+    this.properties = properties;
   }
 
   /**

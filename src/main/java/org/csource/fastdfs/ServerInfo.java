@@ -8,6 +8,8 @@
 
 package org.csource.fastdfs;
 
+import org.csource.autoconfig.FastDFSProperties;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -21,6 +23,7 @@ import java.net.Socket;
 public class ServerInfo {
   protected String ip_addr;
   protected int port;
+  protected FastDFSProperties properties;
 
   /**
    * Constructor
@@ -28,9 +31,10 @@ public class ServerInfo {
    * @param ip_addr address of the server
    * @param port    the port of the server
    */
-  public ServerInfo(String ip_addr, int port) {
+  public ServerInfo(String ip_addr, int port, FastDFSProperties properties) {
     this.ip_addr = ip_addr;
     this.port = port;
+    this.properties = properties;
   }
 
   /**
@@ -59,8 +63,8 @@ public class ServerInfo {
   public Socket connect() throws IOException {
     Socket sock = new Socket();
     sock.setReuseAddress(true);
-    sock.setSoTimeout(ClientGlobal.g_network_timeout);
-    sock.connect(new InetSocketAddress(this.ip_addr, this.port), ClientGlobal.g_connect_timeout);
+    sock.setSoTimeout(properties.getNetworkTimeout());
+    sock.connect(new InetSocketAddress(this.ip_addr, this.port), properties.getConnectTimeout());
     return sock;
   }
 }

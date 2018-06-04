@@ -8,6 +8,7 @@
 
 package org.csource.fastdfs;
 
+import org.csource.autoconfig.FastDFSProperties;
 import org.csource.common.Base64;
 import org.csource.common.MyException;
 import org.csource.common.NameValuePair;
@@ -26,14 +27,16 @@ public class StorageClient {
   public final static Base64 base64 = new Base64('-', '_', '.', 0);
   protected TrackerServer trackerServer;
   protected StorageServer storageServer;
+  protected FastDFSProperties properties;
   protected byte errno;
 
   /**
    * constructor using global settings in class ClientGlobal
    */
-  public StorageClient() {
+  public StorageClient(FastDFSProperties properties) {
     this.trackerServer = null;
     this.storageServer = null;
+    this.properties = properties;
   }
 
   /**
@@ -42,9 +45,10 @@ public class StorageClient {
    * @param trackerServer the tracker server, can be null
    * @param storageServer the storage server, can be null
    */
-  public StorageClient(TrackerServer trackerServer, StorageServer storageServer) {
+  public StorageClient(TrackerServer trackerServer, StorageServer storageServer, FastDFSProperties properties) {
     this.trackerServer = trackerServer;
     this.storageServer = storageServer;
+    this.properties = properties;
   }
 
   /**
@@ -645,7 +649,7 @@ public class StorageClient {
       ext_name_bs = new byte[ProtoCommon.FDFS_FILE_EXT_NAME_MAX_LEN];
       Arrays.fill(ext_name_bs, (byte) 0);
       if (file_ext_name != null && file_ext_name.length() > 0) {
-        byte[] bs = file_ext_name.getBytes(ClientGlobal.g_charset);
+        byte[] bs = file_ext_name.getBytes(this.properties.getCharset());
         int ext_name_len = bs.length;
         if (ext_name_len > ProtoCommon.FDFS_FILE_EXT_NAME_MAX_LEN) {
           ext_name_len = ProtoCommon.FDFS_FILE_EXT_NAME_MAX_LEN;
@@ -654,7 +658,7 @@ public class StorageClient {
       }
 
       if (bUploadSlave) {
-        masterFilenameBytes = master_filename.getBytes(ClientGlobal.g_charset);
+        masterFilenameBytes = master_filename.getBytes(this.properties.getCharset());
 
         sizeBytes = new byte[2 * ProtoCommon.FDFS_PROTO_PKG_LEN_SIZE];
         body_len = sizeBytes.length + ProtoCommon.FDFS_FILE_PREFIX_MAX_LEN + ProtoCommon.FDFS_FILE_EXT_NAME_MAX_LEN
@@ -683,7 +687,7 @@ public class StorageClient {
       offset = header.length + sizeBytes.length;
       if (bUploadSlave) {
         byte[] prefix_name_bs = new byte[ProtoCommon.FDFS_FILE_PREFIX_MAX_LEN];
-        byte[] bs = prefix_name.getBytes(ClientGlobal.g_charset);
+        byte[] bs = prefix_name.getBytes(this.properties.getCharset());
         int prefix_name_len = bs.length;
         Arrays.fill(prefix_name_bs, (byte) 0);
         if (prefix_name_len > ProtoCommon.FDFS_FILE_PREFIX_MAX_LEN) {
@@ -803,7 +807,7 @@ public class StorageClient {
     try {
       storageSocket = this.storageServer.getSocket();
 
-      appenderFilenameBytes = appender_filename.getBytes(ClientGlobal.g_charset);
+      appenderFilenameBytes = appender_filename.getBytes(this.properties.getCharset());
       body_len = 2 * ProtoCommon.FDFS_PROTO_PKG_LEN_SIZE + appenderFilenameBytes.length + file_size;
 
       header = ProtoCommon.packHeader(ProtoCommon.STORAGE_PROTO_CMD_APPEND_FILE, body_len, (byte) 0);
@@ -893,7 +897,7 @@ public class StorageClient {
     try {
       storageSocket = this.storageServer.getSocket();
 
-      appenderFilenameBytes = appender_filename.getBytes(ClientGlobal.g_charset);
+      appenderFilenameBytes = appender_filename.getBytes(this.properties.getCharset());
       body_len = 3 * ProtoCommon.FDFS_PROTO_PKG_LEN_SIZE + appenderFilenameBytes.length + modify_size;
 
       header = ProtoCommon.packHeader(ProtoCommon.STORAGE_PROTO_CMD_MODIFY_FILE, body_len, (byte) 0);
@@ -1040,7 +1044,7 @@ public class StorageClient {
     try {
       storageSocket = this.storageServer.getSocket();
 
-      appenderFilenameBytes = appender_filename.getBytes(ClientGlobal.g_charset);
+      appenderFilenameBytes = appender_filename.getBytes(this.properties.getCharset());
       body_len = 2 * ProtoCommon.FDFS_PROTO_PKG_LEN_SIZE + appenderFilenameBytes.length;
 
       header = ProtoCommon.packHeader(ProtoCommon.STORAGE_PROTO_CMD_TRUNCATE_FILE, body_len, (byte) 0);
@@ -1369,7 +1373,7 @@ public class StorageClient {
         return null;
       }
 
-      return ProtoCommon.split_metadata(new String(pkgInfo.body, ClientGlobal.g_charset));
+      return ProtoCommon.split_metadata(new String(pkgInfo.body, this.properties.getCharset()));
     } catch (IOException ex) {
       if (!bNewConnection) {
         try {
@@ -1426,10 +1430,10 @@ public class StorageClient {
       if (meta_list == null) {
         meta_buff = new byte[0];
       } else {
-        meta_buff = ProtoCommon.pack_metadata(meta_list).getBytes(ClientGlobal.g_charset);
+        meta_buff = ProtoCommon.pack_metadata(meta_list).getBytes(this.properties.getCharset());
       }
 
-      filenameBytes = remote_filename.getBytes(ClientGlobal.g_charset);
+      filenameBytes = remote_filename.getBytes(this.properties.getCharset());
       sizeBytes = new byte[2 * ProtoCommon.FDFS_PROTO_PKG_LEN_SIZE];
       Arrays.fill(sizeBytes, (byte) 0);
 
@@ -1439,7 +1443,7 @@ public class StorageClient {
       System.arraycopy(bs, 0, sizeBytes, ProtoCommon.FDFS_PROTO_PKG_LEN_SIZE, bs.length);
 
       groupBytes = new byte[ProtoCommon.FDFS_GROUP_NAME_MAX_LEN];
-      bs = group_name.getBytes(ClientGlobal.g_charset);
+      bs = group_name.getBytes(this.properties.getCharset());
 
       Arrays.fill(groupBytes, (byte) 0);
       if (bs.length <= groupBytes.length) {
@@ -1552,9 +1556,9 @@ public class StorageClient {
       int groupLen;
       ProtoCommon.RecvPackageInfo pkgInfo;
 
-      filenameBytes = remote_filename.getBytes(ClientGlobal.g_charset);
+      filenameBytes = remote_filename.getBytes(this.properties.getCharset());
       groupBytes = new byte[ProtoCommon.FDFS_GROUP_NAME_MAX_LEN];
-      bs = group_name.getBytes(ClientGlobal.g_charset);
+      bs = group_name.getBytes(this.properties.getCharset());
 
       Arrays.fill(groupBytes, (byte) 0);
       if (bs.length <= groupBytes.length) {
@@ -1623,7 +1627,7 @@ public class StorageClient {
     if (this.storageServer != null) {
       return false;
     } else {
-      TrackerClient tracker = new TrackerClient();
+      TrackerClient tracker = new TrackerClient(this.properties);
       this.storageServer = tracker.getStoreStorage(this.trackerServer, group_name);
       if (this.storageServer == null) {
         throw new MyException("getStoreStorage fail, errno code: " + tracker.getErrorCode());
@@ -1643,7 +1647,7 @@ public class StorageClient {
     if (this.storageServer != null) {
       return false;
     } else {
-      TrackerClient tracker = new TrackerClient();
+      TrackerClient tracker = new TrackerClient(this.properties);
       this.storageServer = tracker.getFetchStorage(this.trackerServer, group_name, remote_filename);
       if (this.storageServer == null) {
         throw new MyException("getStoreStorage fail, errno code: " + tracker.getErrorCode());
@@ -1663,7 +1667,7 @@ public class StorageClient {
     if (this.storageServer != null) {
       return false;
     } else {
-      TrackerClient tracker = new TrackerClient();
+      TrackerClient tracker = new TrackerClient(this.properties);
       this.storageServer = tracker.getUpdateStorage(this.trackerServer, group_name, remote_filename);
       if (this.storageServer == null) {
         throw new MyException("getStoreStorage fail, errno code: " + tracker.getErrorCode());
@@ -1687,8 +1691,8 @@ public class StorageClient {
     int groupLen;
 
     groupBytes = new byte[ProtoCommon.FDFS_GROUP_NAME_MAX_LEN];
-    bs = group_name.getBytes(ClientGlobal.g_charset);
-    filenameBytes = remote_filename.getBytes(ClientGlobal.g_charset);
+    bs = group_name.getBytes(this.properties.getCharset());
+    filenameBytes = remote_filename.getBytes(this.properties.getCharset());
 
     Arrays.fill(groupBytes, (byte) 0);
     if (bs.length <= groupBytes.length) {
@@ -1726,8 +1730,8 @@ public class StorageClient {
     bsOffset = ProtoCommon.long2buff(file_offset);
     bsDownBytes = ProtoCommon.long2buff(download_bytes);
     groupBytes = new byte[ProtoCommon.FDFS_GROUP_NAME_MAX_LEN];
-    bs = group_name.getBytes(ClientGlobal.g_charset);
-    filenameBytes = remote_filename.getBytes(ClientGlobal.g_charset);
+    bs = group_name.getBytes(this.properties.getCharset());
+    filenameBytes = remote_filename.getBytes(this.properties.getCharset());
 
     Arrays.fill(groupBytes, (byte) 0);
     if (bs.length <= groupBytes.length) {

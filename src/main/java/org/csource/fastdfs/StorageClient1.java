@@ -8,6 +8,7 @@
 
 package org.csource.fastdfs;
 
+import org.csource.autoconfig.FastDFSProperties;
 import org.csource.common.MyException;
 import org.csource.common.NameValuePair;
 
@@ -25,8 +26,8 @@ public class StorageClient1 extends StorageClient {
   /**
    * constructor
    */
-  public StorageClient1() {
-    super();
+  public StorageClient1(FastDFSProperties properties) {
+    super(properties);
   }
 
   /**
@@ -35,8 +36,8 @@ public class StorageClient1 extends StorageClient {
    * @param trackerServer the tracker server, can be null
    * @param storageServer the storage server, can be null
    */
-  public StorageClient1(TrackerServer trackerServer, StorageServer storageServer) {
-    super(trackerServer, storageServer);
+  public StorageClient1(TrackerServer trackerServer, StorageServer storageServer, FastDFSProperties properties) {
+    super(trackerServer, storageServer, properties);
   }
 
   public static byte split_file_id(String file_id, String[] results) {

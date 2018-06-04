@@ -8,6 +8,8 @@
 
 package org.csource.fastdfs;
 
+import org.csource.autoconfig.FastDFSProperties;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.Socket;
@@ -20,23 +22,17 @@ import java.util.Arrays;
  * @version Version 1.19
  */
 public class TrackerClient {
-  protected TrackerGroup tracker_group;
   protected byte errno;
 
-  /**
-   * constructor with global tracker group
-   */
-  public TrackerClient() {
-    this.tracker_group = ClientGlobal.g_tracker_group;
-  }
+  private FastDFSProperties fastDFSProperties;
 
   /**
    * constructor with specified tracker group
-   *
-   * @param tracker_group the tracker group object
+   * instead, use fastDFSProperties instead ClientGlobal.class
+   * @param fastDFSProperties the tracker group object
    */
-  public TrackerClient(TrackerGroup tracker_group) {
-    this.tracker_group = tracker_group;
+  public TrackerClient(FastDFSProperties fastDFSProperties) {
+    this.fastDFSProperties = fastDFSProperties;
   }
 
   /**
@@ -54,7 +50,7 @@ public class TrackerClient {
    * @return tracker server Socket object, return null if fail
    */
   public TrackerServer getConnection() throws IOException {
-    return this.tracker_group.getConnection();
+    return this.fastDFSProperties.getTrackerGroup().getConnection(this.fastDFSProperties);
   }
 
   /**
@@ -114,7 +110,7 @@ public class TrackerClient {
         byte[] bs;
         int group_len;
 
-        bs = groupName.getBytes(ClientGlobal.g_charset);
+        bs = groupName.getBytes(this.fastDFSProperties.getCharset());
         bGroupName = new byte[ProtoCommon.FDFS_GROUP_NAME_MAX_LEN];
 
         if (bs.length <= ProtoCommon.FDFS_GROUP_NAME_MAX_LEN) {
@@ -141,7 +137,7 @@ public class TrackerClient {
         + ProtoCommon.FDFS_IPADDR_SIZE - 1);
       store_path = pkgInfo.body[ProtoCommon.TRACKER_QUERY_STORAGE_STORE_BODY_LEN - 1];
 
-      return new StorageServer(ip_addr, port, store_path);
+      return new StorageServer(ip_addr, port, store_path, fastDFSProperties);
     } catch (IOException ex) {
       if (!bNewConnection) {
         try {
@@ -208,7 +204,7 @@ public class TrackerClient {
         byte[] bs;
         int group_len;
 
-        bs = groupName.getBytes(ClientGlobal.g_charset);
+        bs = groupName.getBytes(this.fastDFSProperties.getCharset());
         bGroupName = new byte[ProtoCommon.FDFS_GROUP_NAME_MAX_LEN];
 
         if (bs.length <= ProtoCommon.FDFS_GROUP_NAME_MAX_LEN) {
@@ -258,7 +254,7 @@ public class TrackerClient {
         port = (int) ProtoCommon.buff2long(pkgInfo.body, offset);
         offset += ProtoCommon.FDFS_PROTO_PKG_LEN_SIZE;
 
-        results[i] = new StorageServer(ip_addr, port, store_path);
+        results[i] = new StorageServer(ip_addr, port, store_path, fastDFSProperties);
       }
 
       return results;
@@ -298,7 +294,7 @@ public class TrackerClient {
     if (servers == null) {
       return null;
     } else {
-      return new StorageServer(servers[0].getIpAddr(), servers[0].getPort(), 0);
+      return new StorageServer(servers[0].getIpAddr(), servers[0].getPort(), 0, fastDFSProperties);
     }
   }
 
@@ -317,7 +313,7 @@ public class TrackerClient {
     if (servers == null) {
       return null;
     } else {
-      return new StorageServer(servers[0].getIpAddr(), servers[0].getPort(), 0);
+      return new StorageServer(servers[0].getIpAddr(), servers[0].getPort(), 0, fastDFSProperties);
     }
   }
 
@@ -370,9 +366,9 @@ public class TrackerClient {
     OutputStream out = trackerSocket.getOutputStream();
 
     try {
-      bs = groupName.getBytes(ClientGlobal.g_charset);
+      bs = groupName.getBytes(this.fastDFSProperties.getCharset());
       bGroupName = new byte[ProtoCommon.FDFS_GROUP_NAME_MAX_LEN];
-      bFileName = filename.getBytes(ClientGlobal.g_charset);
+      bFileName = filename.getBytes(this.fastDFSProperties.getCharset());
 
       if (bs.length <= ProtoCommon.FDFS_GROUP_NAME_MAX_LEN) {
         len = bs.length;
@@ -413,9 +409,9 @@ public class TrackerClient {
       offset += ProtoCommon.FDFS_PROTO_PKG_LEN_SIZE;
 
       ServerInfo[] servers = new ServerInfo[server_count];
-      servers[0] = new ServerInfo(ip_addr, port);
+      servers[0] = new ServerInfo(ip_addr, port, fastDFSProperties);
       for (int i = 1; i < server_count; i++) {
-        servers[i] = new ServerInfo(new String(pkgInfo.body, offset, ProtoCommon.FDFS_IPADDR_SIZE - 1).trim(), port);
+        servers[i] = new ServerInfo(new String(pkgInfo.body, offset, ProtoCommon.FDFS_IPADDR_SIZE - 1).trim(), port, fastDFSProperties);
         offset += ProtoCommon.FDFS_IPADDR_SIZE - 1;
       }
 
@@ -584,7 +580,7 @@ public class TrackerClient {
     OutputStream out = trackerSocket.getOutputStream();
 
     try {
-      bs = groupName.getBytes(ClientGlobal.g_charset);
+      bs = groupName.getBytes(this.fastDFSProperties.getCharset());
       bGroupName = new byte[ProtoCommon.FDFS_GROUP_NAME_MAX_LEN];
 
       if (bs.length <= ProtoCommon.FDFS_GROUP_NAME_MAX_LEN) {
@@ -598,7 +594,7 @@ public class TrackerClient {
       int ipAddrLen;
       byte[] bIpAddr;
       if (storageIpAddr != null && storageIpAddr.length() > 0) {
-        bIpAddr = storageIpAddr.getBytes(ClientGlobal.g_charset);
+        bIpAddr = storageIpAddr.getBytes(this.fastDFSProperties.getCharset());
         if (bIpAddr.length < ProtoCommon.FDFS_IPADDR_SIZE) {
           ipAddrLen = bIpAddr.length;
         } else {
@@ -671,7 +667,7 @@ public class TrackerClient {
     trackerSocket = trackerServer.getSocket();
     OutputStream out = trackerSocket.getOutputStream();
 
-    bs = groupName.getBytes(ClientGlobal.g_charset);
+    bs = groupName.getBytes(this.fastDFSProperties.getCharset());
     bGroupName = new byte[ProtoCommon.FDFS_GROUP_NAME_MAX_LEN];
 
     if (bs.length <= ProtoCommon.FDFS_GROUP_NAME_MAX_LEN) {
@@ -683,7 +679,7 @@ public class TrackerClient {
     System.arraycopy(bs, 0, bGroupName, 0, len);
 
     int ipAddrLen;
-    byte[] bIpAddr = storageIpAddr.getBytes(ClientGlobal.g_charset);
+    byte[] bIpAddr = storageIpAddr.getBytes(this.fastDFSProperties.getCharset());
     if (bIpAddr.length < ProtoCommon.FDFS_IPADDR_SIZE) {
       ipAddrLen = bIpAddr.length;
     } else {
@@ -711,7 +707,7 @@ public class TrackerClient {
    * @return true for success, false for fail
    */
   public boolean deleteStorage(String groupName, String storageIpAddr) throws IOException {
-    return this.deleteStorage(ClientGlobal.g_tracker_group, groupName, storageIpAddr);
+    return this.deleteStorage(fastDFSProperties.getTrackerGroup(), groupName, storageIpAddr);
   }
 
   /**
@@ -729,9 +725,9 @@ public class TrackerClient {
     TrackerServer trackerServer;
 
     notFoundCount = 0;
-    for (serverIndex = 0; serverIndex < trackerGroup.tracker_servers.length; serverIndex++) {
+    for (serverIndex = 0; serverIndex < trackerGroup.getTrackerServers().length; serverIndex++) {
       try {
-        trackerServer = trackerGroup.getConnection(serverIndex);
+        trackerServer = trackerGroup.getConnection(serverIndex, this.fastDFSProperties);
       } catch (IOException ex) {
         ex.printStackTrace(System.err);
         this.errno = ProtoCommon.ECONNREFUSED;
@@ -762,17 +758,17 @@ public class TrackerClient {
       }
     }
 
-    if (notFoundCount == trackerGroup.tracker_servers.length) {
+    if (notFoundCount == trackerGroup.getTrackerServers().length) {
       this.errno = ProtoCommon.ERR_NO_ENOENT;
       return false;
     }
 
     notFoundCount = 0;
-    for (serverIndex = 0; serverIndex < trackerGroup.tracker_servers.length; serverIndex++) {
+    for (serverIndex = 0; serverIndex < trackerGroup.getTrackerServers().length; serverIndex++) {
       try {
-        trackerServer = trackerGroup.getConnection(serverIndex);
+        trackerServer = trackerGroup.getConnection(serverIndex, this.fastDFSProperties);
       } catch (IOException ex) {
-        System.err.println("connect to server " + trackerGroup.tracker_servers[serverIndex].getAddress().getHostAddress() + ":" + trackerGroup.tracker_servers[serverIndex].getPort() + " fail");
+        System.err.println("connect to server " + trackerGroup.getTrackerServers()[serverIndex].getAddress().getHostAddress() + ":" + trackerGroup.getTrackerServers()[serverIndex].getPort() + " fail");
         ex.printStackTrace(System.err);
         this.errno = ProtoCommon.ECONNREFUSED;
         return false;
@@ -797,7 +793,7 @@ public class TrackerClient {
       }
     }
 
-    if (notFoundCount == trackerGroup.tracker_servers.length) {
+    if (notFoundCount == trackerGroup.getTrackerServers().length) {
       this.errno = ProtoCommon.ERR_NO_ENOENT;
       return false;
     }

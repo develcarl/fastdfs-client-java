@@ -8,6 +8,7 @@
 
 package org.csource.fastdfs;
 
+import org.csource.autoconfig.FastDFSProperties;
 import org.csource.common.MyException;
 import org.csource.common.NameValuePair;
 
@@ -99,6 +100,8 @@ public class ProtoCommon {
   public static final long TRUNK_LOGIC_FILENAME_LENGTH = NORMAL_LOGIC_FILENAME_LENGTH + FDFS_TRUNK_FILE_INFO_LEN;
   protected static final int PROTO_HEADER_CMD_INDEX = FDFS_PROTO_PKG_LEN_SIZE;
   protected static final int PROTO_HEADER_STATUS_INDEX = FDFS_PROTO_PKG_LEN_SIZE + 1;
+
+  public static FastDFSProperties properties;
 
   private ProtoCommon() {
   }
@@ -418,9 +421,9 @@ public class ProtoCommon {
    * @return token string
    */
   public static String getToken(String remote_filename, int ts, String secret_key) throws UnsupportedEncodingException, NoSuchAlgorithmException, MyException {
-    byte[] bsFilename = remote_filename.getBytes(ClientGlobal.g_charset);
-    byte[] bsKey = secret_key.getBytes(ClientGlobal.g_charset);
-    byte[] bsTimestamp = (new Integer(ts)).toString().getBytes(ClientGlobal.g_charset);
+    byte[] bsFilename = remote_filename.getBytes(properties.getCharset());
+    byte[] bsKey = secret_key.getBytes(properties.getCharset());
+    byte[] bsTimestamp = (new Integer(ts)).toString().getBytes(properties.getCharset());
 
     byte[] buff = new byte[bsFilename.length + bsKey.length + bsTimestamp.length];
     System.arraycopy(bsFilename, 0, buff, 0, bsFilename.length);

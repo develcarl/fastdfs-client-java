@@ -8,6 +8,8 @@
 
 package org.csource.fastdfs;
 
+import org.csource.autoconfig.FastDFSProperties;
+
 import java.util.Date;
 
 /**
@@ -84,6 +86,12 @@ public class StructStorageStat extends StructBase {
 
   protected static int fieldsTotalSize;
   protected static StructBase.FieldInfo[] fieldsArray = new StructBase.FieldInfo[62];
+
+  protected static FastDFSProperties properties;
+
+  public static void setProperties(FastDFSProperties properties) {
+    StructStorageStat.properties = properties;
+  }
 
   static {
     int offset = 0;
@@ -915,11 +923,11 @@ public class StructStorageStat extends StructBase {
    */
   public void setFields(byte[] bs, int offset) {
     this.status = byteValue(bs, offset, fieldsArray[FIELD_INDEX_STATUS]);
-    this.id = stringValue(bs, offset, fieldsArray[FIELD_INDEX_ID]);
-    this.ipAddr = stringValue(bs, offset, fieldsArray[FIELD_INDEX_IP_ADDR]);
-    this.srcIpAddr = stringValue(bs, offset, fieldsArray[FIELD_INDEX_SRC_IP_ADDR]);
-    this.domainName = stringValue(bs, offset, fieldsArray[FIELD_INDEX_DOMAIN_NAME]);
-    this.version = stringValue(bs, offset, fieldsArray[FIELD_INDEX_VERSION]);
+    this.id = stringValue(bs, offset, fieldsArray[FIELD_INDEX_ID], properties.getCharset());
+    this.ipAddr = stringValue(bs, offset, fieldsArray[FIELD_INDEX_IP_ADDR], properties.getCharset());
+    this.srcIpAddr = stringValue(bs, offset, fieldsArray[FIELD_INDEX_SRC_IP_ADDR], properties.getCharset());
+    this.domainName = stringValue(bs, offset, fieldsArray[FIELD_INDEX_DOMAIN_NAME], properties.getCharset());
+    this.version = stringValue(bs, offset, fieldsArray[FIELD_INDEX_VERSION], properties.getCharset());
     this.totalMB = longValue(bs, offset, fieldsArray[FIELD_INDEX_TOTAL_MB]);
     this.freeMB = longValue(bs, offset, fieldsArray[FIELD_INDEX_FREE_MB]);
     this.uploadPriority = intValue(bs, offset, fieldsArray[FIELD_INDEX_UPLOAD_PRIORITY]);

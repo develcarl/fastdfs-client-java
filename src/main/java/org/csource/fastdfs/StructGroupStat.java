@@ -8,6 +8,8 @@
 
 package org.csource.fastdfs;
 
+import org.csource.autoconfig.FastDFSProperties;
+
 /**
  * C struct body decoder
  *
@@ -30,6 +32,12 @@ public class StructGroupStat extends StructBase {
 
   protected static int fieldsTotalSize;
   protected static StructBase.FieldInfo[] fieldsArray = new StructBase.FieldInfo[12];
+
+  protected static FastDFSProperties properties;
+
+  public static void setProperties(FastDFSProperties properties) {
+    StructGroupStat.properties = properties;
+  }
 
   static {
     int offset = 0;
@@ -209,7 +217,7 @@ public class StructGroupStat extends StructBase {
    * @param offset start offset
    */
   public void setFields(byte[] bs, int offset) {
-    this.groupName = stringValue(bs, offset, fieldsArray[FIELD_INDEX_GROUP_NAME]);
+    this.groupName = stringValue(bs, offset, fieldsArray[FIELD_INDEX_GROUP_NAME], properties.getCharset());
     this.totalMB = longValue(bs, offset, fieldsArray[FIELD_INDEX_TOTAL_MB]);
     this.freeMB = longValue(bs, offset, fieldsArray[FIELD_INDEX_FREE_MB]);
     this.trunkFreeMB = longValue(bs, offset, fieldsArray[FIELD_INDEX_TRUNK_FREE_MB]);

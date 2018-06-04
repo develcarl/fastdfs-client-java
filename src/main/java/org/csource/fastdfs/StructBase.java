@@ -26,9 +26,9 @@ public abstract class StructBase {
    */
   public abstract void setFields(byte[] bs, int offset);
 
-  protected String stringValue(byte[] bs, int offset, FieldInfo filedInfo) {
+  protected String stringValue(byte[] bs, int offset, FieldInfo filedInfo, String charset) {
     try {
-      return (new String(bs, offset + filedInfo.offset, filedInfo.size, ClientGlobal.g_charset)).trim();
+      return (new String(bs, offset + filedInfo.offset, filedInfo.size, charset)).trim();
     } catch (UnsupportedEncodingException ex) {
       ex.printStackTrace();
       return null;
