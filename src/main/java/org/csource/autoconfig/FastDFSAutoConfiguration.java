@@ -3,6 +3,7 @@ package org.csource.autoconfig;
 import org.apache.log4j.Logger;
 import org.csource.fastdfs.ProtoCommon;
 import org.csource.fastdfs.StructGroupStat;
+import org.csource.fastdfs.StructStorageStat;
 import org.csource.fastdfs.TrackerClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -32,7 +33,7 @@ public class FastDFSAutoConfiguration {
         logger.info("start connect fastdfs server!");
         ProtoCommon.properties = fastDFSProperties;
         StructGroupStat.setProperties(fastDFSProperties);
-        StructGroupStat.setProperties(fastDFSProperties);
+        StructStorageStat.setProperties(fastDFSProperties);
         return new TrackerClient(fastDFSProperties);
     }
 
